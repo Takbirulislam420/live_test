@@ -1,0 +1,188 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  // ignore: library_private_types_in_public_api
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController numberController = TextEditingController();
+  List<Map<String, String>> dataList = [];
+
+  void addItem() {
+    String name = nameController.text.trim();
+    String number = numberController.text.trim();
+    if (name.isNotEmpty && number.isNotEmpty) {
+      setState(() {
+        dataList.add({'name': name, 'number': number});
+      });
+      nameController.clear();
+      numberController.clear();
+      MySnackBar("Your data is Saved", context);
+    } else {
+      MySnackBar("Please insert your name and number", context);
+    }
+  }
+
+  // ignore: non_constant_identifier_names
+  MySnackBar(message, context) {
+    return ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  // ignore: non_constant_identifier_names
+  MyAlertDialog(context, index) {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Expanded(
+              child: AlertDialog(
+            title: const Text("Confirmation"),
+            content: const Text("Are you sure for delete?"),
+            actions: [
+              IconButton(
+                  onPressed: () {
+                    //MySnackBar("Delete Success", context);
+                    Navigator.of(context).pop();
+                  },
+                  icon: const Icon(Icons.delete_forever)),
+              IconButton(
+                  onPressed: () {
+                    MySnackBar("Delete Success", context);
+                    setState(() {
+                      dataList.removeAt(
+                          index); // Remove item at the specified index
+                    });
+                    Navigator.of(context).pop();
+                  },
+                  icon: const Icon(Icons.delete)),
+            ],
+          ));
+        });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        backgroundColor: Colors.blueGrey[400],
+        title: const Text(
+          'Contact List',
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                  hintText: "Name",
+                  //labelText: 'Enter Name',
+                  border: OutlineInputBorder()),
+            ),
+            const SizedBox(height: 10.0),
+            TextField(
+              controller: numberController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                  hintText: "Number", border: OutlineInputBorder()),
+            ),
+            const SizedBox(height: 20.0),
+            // Button to add data to the list
+            GestureDetector(
+              onTap: () {
+                //MySnackBar("Snackbar", context);
+                addItem();
+              },
+              child: Container(
+                width: double.infinity, // Width of the button
+                height: 50, // Height of the button
+                decoration: BoxDecoration(
+                  color: Colors.blueGrey[400], // Background color
+                  borderRadius: BorderRadius.circular(8), // Rounded corners
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1), // Shadow color
+                      blurRadius: 6, // Shadow blur
+                      offset: const Offset(0, 4), // Shadow offset
+                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: Text(
+                    'add',
+                    style: TextStyle(
+                      color: Colors.white, // Text color
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+
+            // Display the current list of maps
+            Expanded(
+              child: ListView.builder(
+                itemCount: dataList.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 3),
+                    child: GestureDetector(
+                      onLongPress: () {
+                        MyAlertDialog(context, index);
+                      },
+                      child: Container(
+                        color: Colors.black12, // Set background color here
+                        child: ListTile(
+                          trailing: const Icon(
+                            Icons.call,
+                            color: Colors.blue,
+                          ),
+                          leading: const Icon(
+                            Icons.person,
+                            color: Colors.brown,
+                          ),
+                          title: Text(
+                            '${dataList[index]['name']}',
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                          subtitle: Text('${dataList[index]['number']}'),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
